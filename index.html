@@ -1,269 +1,516 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ChatPal - AI Chatbot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: var(--bg);
-      transition: background 0.3s, color 0.3s;
-    }
-    :root {
-      --bg: #f5f5f5;
-      --text: #000;
-      --bot: #e5e5ea;
-      --user: #4a90e2;
-      --header: #4a90e2;
-      --btn: #4a90e2;
-    }
-    body.dark {
-      --bg: #1e1e1e;
-      --text: #fff;
-      --bot: #444;
-      --user: #0078ff;
-      --header: #333;
-      --btn: #0078ff;
-    }
-    .chat-container {
-      width: 420px;
-      max-width: 95%;
-      height: 600px;
-      background: var(--bg);
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      color: var(--text);
-    }
-    .chat-header {
-      background: var(--header);
-      color: white;
-      padding: 12px;
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .chat-window {
-      flex: 1;
-      padding: 12px;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-    .message {
-      max-width: 70%;
-      margin-bottom: 10px;
-      padding: 10px 14px;
-      border-radius: 18px;
-      line-height: 1.4;
-      word-wrap: break-word;
-    }
-    .user-message {
-      align-self: flex-end;
-      background: var(--user);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-    .bot-message {
-      align-self: flex-start;
-      background: var(--bot);
-      color: var(--text);
-      border-bottom-left-radius: 4px;
-    }
-    .typing {
-      font-style: italic;
-      color: gray;
-      margin-bottom: 10px;
-    }
-    .chat-input-area {
-      display: flex;
-      border-top: 1px solid #ddd;
-      background: var(--bg);
-    }
-    .chat-input {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      outline: none;
-      font-size: 16px;
-      background: var(--bg);
-      color: var(--text);
-    }
-    .send-btn {
-      background: var(--btn);
-      color: white;
-      border: none;
-      padding: 0 20px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .send-btn:hover {
-      opacity: 0.9;
-    }
-    .controls {
-      display: flex;
-      gap: 8px;
-    }
-    select, button {
-      border: none;
-      padding: 5px 8px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ChatPal – Frontend Only</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --panel: #ffffff;
+    --text: #111;
+    --muted: #666;
+    --border: #e6e6e6;
+    --bot: #e4e6eb;
+    --user: #4a90e2;
+    --accent: #4a90e2;
+  }
+  body.dark {
+    --bg: #0f1115;
+    --panel: #14171c;
+    --text: #f5f7fb;
+    --muted: #a0a3a8;
+    --border: #22262c;
+    --bot: #22252b;
+    --user: #0ea5e9;
+    --accent: #0ea5e9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial;
+    display: grid;
+    place-items: center;
+    transition: background .25s ease, color .2s ease;
+  }
+  .chat-container {
+    width: min(440px, 96vw);
+    height: 84vh;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    overflow: hidden;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--accent);
+    color: #fff;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px; font-weight: 700;
+  }
+  .brand .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #fff; color: var(--accent); display: grid; place-items: center; font-weight: 800;
+  }
+  .header .actions { display: flex; gap: 6px; }
+  .icon-btn {
+    border: none; background: rgba(255,255,255,.15); color: #fff;
+    padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 14px;
+    transition: opacity .2s ease, transform .06s ease;
+  }
+  .icon-btn:active { transform: scale(.98); }
+  .icon-btn:hover { opacity: .9; }
+
+  .chat-window {
+    padding: 12px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 10px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,.02));
+  }
+  .empty {
+    margin: auto; text-align: center; color: var(--muted); font-size: 14px;
+  }
+  .message {
+    display: flex; gap: 10px; align-items: flex-end; animation: fade .18s ease;
+  }
+  .message.user { flex-direction: row-reverse; }
+  .bubble {
+    max-width: 72%; padding: 10px 12px; border-radius: 16px; word-wrap: break-word; line-height: 1.45;
+  }
+  .message.user .bubble { background: var(--user); color:#fff; border-bottom-right-radius: 6px; }
+  .message.bot .bubble  { background: var(--bot); color: var(--text); border-bottom-left-radius: 6px; }
+  .msg-avatar {
+    width: 34px; height: 34px; border-radius: 50%; background-size: cover; background-position:center;
+    border: 1px solid var(--border);
+  }
+  .msg-avatar.user { background-image: url('https://cdn-icons-png.flaticon.com/512/1946/1946429.png'); }
+  .msg-avatar.bot  { background-image: url('https://cdn-icons-png.flaticon.com/512/4712/4712109.png'); }
+
+  @keyframes fade { from { opacity:0; transform: translateY(6px);} to { opacity:1; transform: none;}}
+
+  .typing { display: flex; align-items: center; gap: 8px; color: var(--muted); font-style: italic; padding: 2px 4px 8px 4px; }
+  .dots { display: inline-flex; gap: 3px; }
+  .dot { width:6px; height:6px; border-radius:50%; background: currentColor; opacity:.5; animation: blink 1s infinite; }
+  .dot:nth-child(2){ animation-delay: .2s;}
+  .dot:nth-child(3){ animation-delay: .4s;}
+  @keyframes blink { 0%,80%,100%{opacity:.2;} 40%{opacity:1;}}
+
+  .quick-replies {
+    display: flex; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--border); background: rgba(0,0,0,.02);
+    flex-wrap: wrap;
+  }
+  .chip {
+    border: 1px solid var(--accent); background: transparent; color: var(--accent);
+    padding: 6px 10px; border-radius: 999px; cursor: pointer; font-size: 13px;
+    transition: background .15s ease, color .15s ease;
+  }
+  .chip:hover { background: var(--accent); color:#fff; }
+
+  .composer {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 10px; border-top: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .input {
+    padding: 12px 12px; border-radius: 12px; border: 1px solid var(--border); outline: none; font-size: 15px; background: transparent; color: var(--text);
+  }
+  .send-btn, .mic-btn {
+    min-width: 84px; border-radius: 12px; border: 1px solid var(--border); background: var(--accent); color: #fff; font-weight: 600; cursor: pointer;
+    padding: 0 14px;
+  }
+  .mic-btn { min-width: auto; }
+  .mic-btn.recording { background: #ef4444; } /* red when recording */
+
+  /* Modal */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4); display: none; place-items: center; z-index: 50;
+  }
+  .overlay.show { display: grid; }
+  .modal {
+    width: min(420px, 92vw);
+    background: var(--panel); color: var(--text);
+    border: 1px solid var(--border); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.3);
+    padding: 16px;
+  }
+  .modal h3 { margin: 0 0 12px 0; }
+  .row { display:flex; align-items:center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px dashed var(--border); }
+  .row:last-child { border-bottom: none; }
+  .switch { position: relative; width: 44px; height: 24px; background: var(--border); border-radius: 999px; cursor: pointer; }
+  .knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: #fff; border-radius: 50%; transition: left .2s ease; }
+  .switch.on { background: var(--accent); }
+  .switch.on .knob { left: 22px; }
+  .modal .actions { display:flex; justify-content: flex-end; gap: 8px; padding-top: 10px; }
+  .btn {
+    border: 1px solid var(--border); background: var(--accent); color:#fff; padding: 8px 12px; border-radius: 10px; cursor: pointer; font-weight: 600;
+  }
+  .btn.secondary { background: transparent; color: var(--text); }
+  select, .btn, .input { font-size: 14px; }
+</style>
 </head>
 <body>
   <div class="chat-container">
-    <div class="chat-header">
-      🤖 ChatPal
-      <div class="controls">
-        <select id="languageSelect">
-          <option value="en">EN</option>
-          <option value="hi">HI</option>
-          <option value="es">ES</option>
-        </select>
-        <button onclick="toggleDarkMode()">🌙</button>
-        <button onclick="startVoiceInput()">🎤</button>
+    <div class="header">
+      <div class="brand"><div class="avatar">🤖</div>ChatPal</div>
+      <div class="actions">
+        <button class="icon-btn" id="resetBtn" title="Clear chat">♻️</button>
+        <button class="icon-btn" id="gearBtn" title="Settings">⚙️</button>
       </div>
     </div>
-    <div class="chat-window" id="chatWindow"></div>
-    <div class="chat-input-area">
-      <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." />
-      <button class="send-btn" onclick="sendMessage()">Send</button>
+
+    <div class="chat-window" id="chatWindow">
+      <div class="empty" id="emptyHint">Start chatting. Your history & settings are saved locally.</div>
+    </div>
+
+    <div class="quick-replies" id="quickBar">
+      <button class="chip">Hello 👋</button>
+      <button class="chip">Tell me a joke</button>
+      <button class="chip">Tips for productivity</button>
+      <button class="chip">Bye 👋</button>
+    </div>
+
+    <div class="composer">
+      <input id="userInput" class="input" placeholder="Type a message..." autocomplete="off"/>
+      <button id="micBtn" class="mic-btn" title="Toggle microphone">🎤</button>
+      <button id="sendBtn" class="send-btn">Send</button>
     </div>
   </div>
 
-  <script>
-    const chatWindow = document.getElementById('chatWindow');
-    const userInput = document.getElementById('userInput');
-    const languageSelect = document.getElementById('languageSelect');
+  <!-- Settings Modal -->
+  <div class="overlay" id="overlay">
+    <div class="modal">
+      <h3>Settings</h3>
+      <div class="row">
+        <label>Theme</label>
+        <select id="themeSelect">
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Language</label>
+        <select id="langSelect">
+          <option value="en">English (EN)</option>
+          <option value="hi">हिंदी (HI)</option>
+          <option value="es">Español (ES)</option>
+          <option value="fr">Français (FR)</option>
+        </select>
+      </div>
+      <div class="row">
+        <label>Mic (Speech Input)</label>
+        <div class="switch" id="micSwitch"><div class="knob"></div></div>
+      </div>
+      <div class="row">
+        <label>Voice (Speak Replies)</label>
+        <div class="switch" id="ttsSwitch"><div class="knob"></div></div>
+      </div>
+      <div class="actions">
+        <button class="btn secondary" id="closeBtn">Cancel</button>
+        <button class="btn" id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
 
-    // Load saved chat history
-    window.onload = () => {
-      let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-      history.forEach(msg => appendMessage(msg.text, msg.sender, false));
-    };
+<script>
+  // ======== Persistent Settings ========
+  const DEFAULT_SETTINGS = { theme: 'light', language: 'en', micEnabled: true, ttsEnabled: true };
+  function loadSettings() {
+    try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem('chatpal_settings')||'{}') }; }
+    catch { return { ...DEFAULT_SETTINGS }; }
+  }
+  function saveSettings(s) { localStorage.setItem('chatpal_settings', JSON.stringify(s)); }
 
-    function appendMessage(message, sender, save = true) {
-      const msgDiv = document.createElement('div');
-      msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-      msgDiv.textContent = message;
-      chatWindow.appendChild(msgDiv);
-      chatWindow.scrollTop = chatWindow.scrollHeight;
+  let settings = loadSettings();
+  applyTheme(settings.theme);
 
-      if (save) saveToHistory(message, sender);
+  // ======== DOM Elements ========
+  const chatWindow = document.getElementById('chatWindow');
+  const emptyHint = document.getElementById('emptyHint');
+  const userInput = document.getElementById('userInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const micBtn = document.getElementById('micBtn');
+  const quickBar = document.getElementById('quickBar');
+  const resetBtn = document.getElementById('resetBtn');
+  const gearBtn = document.getElementById('gearBtn');
+  const overlay = document.getElementById('overlay');
+  const themeSelect = document.getElementById('themeSelect');
+  const langSelect = document.getElementById('langSelect');
+  const micSwitch = document.getElementById('micSwitch');
+  const ttsSwitch = document.getElementById('ttsSwitch');
+  const closeBtn = document.getElementById('closeBtn');
+  const saveBtn = document.getElementById('saveBtn');
+
+  // ======== Load Chat History ========
+  (function loadHistory(){
+    const history = JSON.parse(localStorage.getItem('chatHistory')||'[]');
+    if (history.length) emptyHint?.remove();
+    history.forEach(m => appendMessage(m.text, m.sender, false));
+  })();
+
+  // ======== Message Rendering ========
+  function appendMessage(text, sender, save=true){
+    const row = document.createElement('div');
+    row.className = 'message '+sender;
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar '+sender;
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    chatWindow.appendChild(row);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+    emptyHint?.remove();
+    if (save) {
+      const h = JSON.parse(localStorage.getItem('chatHistory')||'[]');
+      h.push({ text, sender });
+      localStorage.setItem('chatHistory', JSON.stringify(h));
     }
+  }
 
-    function saveToHistory(text, sender) {
-      let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
-      history.push({ text, sender });
-      localStorage.setItem('chatHistory', JSON.stringify(history));
-    }
+  function showTyping(){
+    const t = document.createElement('div'); t.className='typing'; t.id='typing';
+    t.innerHTML = '<span>ChatPal is typing</span><span class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
+    chatWindow.appendChild(t);
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+  function removeTyping(){ document.getElementById('typing')?.remove(); }
 
-    function sendMessage() {
-      const message = userInput.value.trim();
-      if (message === "") return;
+  // ======== Simple Multilingual Mock Brain ========
+  const RESPONSES = {
+  en: {
+    hello: "Hello! How can I help you today?",
+    jokes: [
+      "Why don’t programmers like nature? It has too many bugs.",
+      "Why do Java developers wear glasses? Because they don't C#. 😄",
+      "Why was the computer cold? It forgot to close its Windows.",
+      "I told my computer I needed a break, and it said: 'No problem, I’ll go to sleep.'",
+      "There are only 10 types of people: those who understand binary and those who don’t."
+    ],
+    tips: [
+      "Break work into small tasks to avoid overwhelm.",
+      "Use the Pomodoro technique: 25 minutes focus, 5 minutes break.",
+      "Turn off notifications while working.",
+      "Tackle the hardest task first (‘eat the frog’ method).",
+      "Keep your workspace clutter-free to reduce distractions."
+    ],
+    bye: "Goodbye! Have a wonderful day! 👋",
+    fallback: q => `You said: “${q}”. I'm a demo bot—try 'Hello', 'Tell me a joke', 'Tips for productivity', or 'Bye'.`
+  },
 
-      appendMessage(message, 'user');
-      userInput.value = "";
+  hi: {
+    hello: "नमस्ते! मैं आपकी कैसे मदद कर सकता/सकती हूँ?",
+    jokes: [
+      "कंप्यूटर ठंडा क्यों था? क्योंकि उसने अपनी Windows बंद नहीं की।",
+      "Java डेवलपर्स चश्मा क्यों पहनते हैं? क्योंकि उन्हें C-Sharp नहीं दिखता।",
+      "मैंने कंप्यूटर से कहा 'मुझे ब्रेक चाहिए', उसने बोला 'ठीक है, मैं स्लीप मोड में जा रहा हूँ।'",
+      "प्रोग्रामर पार्टी में क्यों नहीं जाते? क्योंकि उन्हें ‘functions’ पसंद नहीं।",
+      "AI ने कहा 'मैं तुम्हारी जगह ले लूँगा'। डेवलपर बोला 'पहले तुम्हें debug करना पड़ेगा!'"
+    ],
+    tips: [
+      "काम को छोटे-छोटे हिस्सों में बाँटें ताकि तनाव कम हो।",
+      "पोमोडोरो तकनीक अपनाएँ: 25 मिनट काम, 5 मिनट ब्रेक।",
+      "काम करते समय नोटिफिकेशन बंद कर दें।",
+      "सबसे मुश्किल काम सबसे पहले करें (‘Eat the Frog’ तरीका)।",
+      "काम करने की जगह को साफ-सुथरा रखें।"
+    ],
+    bye: "अलविदा! आपका दिन शुभ हो! 👋",
+    fallback: q => `आपने कहा: “${q}”. यह एक डेमो बॉट है — 'Hello', 'Tell me a joke', 'Tips for productivity', या 'Bye' आज़माएँ।`
+  },
 
-      showTyping();
-      setTimeout(() => {
-        botReply(message);
-      }, 1000);
-    }
+  es: {
+    hello: "¡Hola! ¿Cómo puedo ayudarte hoy?",
+    jokes: [
+      "¿Por qué los desarrolladores llevan gafas? ¡Porque no ven C#! 😄",
+      "¿Cuál es el animal favorito de un programador? El bug.",
+      "Un byte le dice a otro: '¿Tienes un bit de tiempo?'"
+    ],
+    tips: [
+      "Trabaja en bloques cortos para mantener la concentración.",
+      "Toma descansos regulares para ser más productivo.",
+      "Escribe una lista de tareas claras.",
+      "Reduce distracciones apagando notificaciones."
+    ],
+    bye: "¡Adiós! ¡Que tengas un gran día! 👋",
+    fallback: q => `Dijiste: “${q}”. Soy un bot de demo — prueba 'Hello', 'Tell me a joke', 'Tips for productivity' o 'Bye'.`
+  },
 
-    function showTyping() {
-      const typingDiv = document.createElement('div');
-      typingDiv.classList.add('typing');
-      typingDiv.id = "typing";
-      typingDiv.textContent = "ChatPal is typing...";
-      chatWindow.appendChild(typingDiv);
-      chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
+  fr: {
+    hello: "Bonjour ! Comment puis-je vous aider aujourd’hui ?",
+    jokes: [
+      "Pourquoi les développeurs portent-ils des lunettes ? Parce qu’ils ne voient pas le C#! 😄",
+      "Pourquoi l’ordinateur était-il fatigué ? Parce qu’il avait trop de cookies.",
+      "Un bug entre dans un bar et dit : 'Je ne me sens pas à ma place ici.'"
+    ],
+    tips: [
+      "Travaillez par petites sessions pour rester concentré.",
+      "Faites des pauses régulières pour éviter la fatigue.",
+      "Écrivez des tâches claires et précises.",
+      "Réduisez les notifications pour moins de distractions."
+    ],
+    bye: "Au revoir ! Passez une excellente journée ! 👋",
+    fallback: q => `Vous avez dit : “${q}”. Je suis un bot démo — essayez 'Hello', 'Tell me a joke', 'Tips for productivity' ou 'Bye'.`
+  }
+};
 
-    function removeTyping() {
-      const typingDiv = document.getElementById('typing');
-      if (typingDiv) typingDiv.remove();
-    }
 
-    function botReply(userMessage) {
+  function getReply(q) {
+  const lang = settings.language in RESPONSES ? settings.language : 'en';
+  const d = RESPONSES[lang];
+  const s = q.toLowerCase();
+
+  if (s.includes('hello') || s.includes('hi') || s.includes('hey')) {
+    return d.hello;
+  }
+  if (s.includes('joke')) {
+    const list = d.jokes;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  if (s.includes('productivity') || s.includes('tips')) {
+    const list = d.tips;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+  if (s.includes('bye') || s.includes('goodbye')) {
+    return d.bye;
+  }
+  return typeof d.fallback === "function" ? d.fallback(q) : d.fallback;
+}
+
+
+  // ======== Send Flow ========
+  function send(text){
+    appendMessage(text, 'user');
+    showTyping();
+    setTimeout(() => {
+      const reply = getReply(text);
       removeTyping();
-
-      const lang = languageSelect.value;
-      let reply = "";
-
-      if (lang === "en") {
-        if (userMessage.toLowerCase().includes("hello")) reply = "Hello! 👋 How can I help?";
-        else if (userMessage.toLowerCase().includes("bye")) reply = "Goodbye! 👋";
-        else reply = "I’m ChatPal, your AI assistant!";
-      } 
-      else if (lang === "hi") {
-        if (userMessage.toLowerCase().includes("hello")) reply = "नमस्ते! 👋 कैसे हो?";
-        else if (userMessage.toLowerCase().includes("bye")) reply = "अलविदा! 👋";
-        else reply = "मैं ChatPal हूँ, आपका सहायक!";
-      } 
-      else if (lang === "es") {
-        if (userMessage.toLowerCase().includes("hello")) reply = "¡Hola! 👋 ¿Cómo puedo ayudarte?";
-        else if (userMessage.toLowerCase().includes("bye")) reply = "¡Adiós! 👋";
-        else reply = "Soy ChatPal, tu asistente virtual!";
-      }
-
       appendMessage(reply, 'bot');
-      speakText(reply, lang);
+      if (settings.ttsEnabled) speak(reply, settings.language);
+    }, 800);
+  }
+
+  sendBtn.addEventListener('click', () => {
+    const text = userInput.value.trim();
+    if (!text) return;
+    userInput.value = '';
+    send(text);
+  });
+  userInput.addEventListener('keydown', (e)=>{ if (e.key==='Enter') { e.preventDefault(); sendBtn.click(); }});
+
+  // Quick replies
+  quickBar.addEventListener('click', (e)=>{
+    if (e.target.classList.contains('chip')) send(e.target.textContent);
+  });
+
+  // ======== Settings Modal ========
+  function openSettings(){
+    // populate current
+    themeSelect.value = settings.theme;
+    langSelect.value = settings.language;
+    setSwitch(micSwitch, settings.micEnabled);
+    setSwitch(ttsSwitch, settings.ttsEnabled);
+    overlay.classList.add('show');
+  }
+  function closeSettings(){ overlay.classList.remove('show'); }
+  function setSwitch(el, on){ el.classList.toggle('on', !!on); }
+
+  gearBtn.addEventListener('click', openSettings);
+  closeBtn.addEventListener('click', closeSettings);
+  overlay.addEventListener('click', (e)=>{ if (e.target === overlay) closeSettings(); });
+  micSwitch.addEventListener('click', ()=> setSwitch(micSwitch, !micSwitch.classList.contains('on')));
+  ttsSwitch.addEventListener('click', ()=> setSwitch(ttsSwitch, !ttsSwitch.classList.contains('on')));
+  saveBtn.addEventListener('click', ()=>{
+    settings.theme = themeSelect.value;
+    settings.language = langSelect.value;
+    settings.micEnabled = micSwitch.classList.contains('on');
+    settings.ttsEnabled = ttsSwitch.classList.contains('on');
+    saveSettings(settings);
+    applyTheme(settings.theme);
+    closeSettings();
+  });
+
+  function applyTheme(theme){
+    if (theme === 'dark') document.body.classList.add('dark');
+    else document.body.classList.remove('dark');
+  }
+
+  // ======== Clear Chat ========
+  resetBtn.addEventListener('click', ()=>{
+    if (!confirm('Clear conversation history?')) return;
+    localStorage.removeItem('chatHistory');
+    chatWindow.innerHTML = '<div class="empty" id="emptyHint">Start chatting. Your history & settings are saved locally.</div>';
+  });
+
+  // ======== Speech (STT + TTS) ========
+  let recognition = null;
+  let listening = false;
+  function ensureRecognizer(){
+    const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Ctor) return null;
+    const r = new Ctor();
+    r.lang = langToBCP47(settings.language);
+    r.interimResults = false;
+    r.maxAlternatives = 1;
+    r.onresult = (e)=>{
+      const transcript = e.results[0][0].transcript;
+      userInput.value = transcript;
+      if (transcript.trim()) send(transcript.trim());
+    };
+    r.onerror = (e)=>{ console.warn('Speech error', e.error); stopListening(); };
+    r.onend = ()=>{ stopListening(false); };
+    return r;
+  }
+  function startListening(){
+    if (!settings.micEnabled) { flashMicDenied(); return; }
+    if (listening) return;
+    recognition = ensureRecognizer();
+    if (!recognition) { alert("Speech Recognition not supported in this browser."); return; }
+    listening = true;
+    micBtn.classList.add('recording');
+    recognition.start();
+  }
+  function stopListening(cancel=true){
+    if (!listening) return;
+    listening = false;
+    micBtn.classList.remove('recording');
+    try { cancel && recognition?.abort(); } catch {}
+  }
+  function flashMicDenied(){
+    micBtn.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.1)' }, { transform: 'scale(1)' }], { duration: 300 });
+  }
+  function langToBCP47(code){
+    switch(code){
+      case 'hi': return 'hi-IN';
+      case 'es': return 'es-ES';
+      case 'fr': return 'fr-FR';
+      default: return 'en-US';
     }
+  }
+  function speak(text, langCode){
+    if (!('speechSynthesis' in window)) return;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = langToBCP47(langCode);
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }
 
-    // Dark Mode
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-    }
+  micBtn.addEventListener('click', ()=>{
+    if (listening) stopListening();
+    else startListening();
+  });
 
-    // Voice Input (Speech-to-Text)
-    function startVoiceInput() {
-      if (!('webkitSpeechRecognition' in window)) {
-        alert("Your browser doesn't support Speech Recognition");
-        return;
-      }
-      const recognition = new webkitSpeechRecognition();
-      recognition.lang = languageSelect.value === "hi" ? "hi-IN" : 
-                         languageSelect.value === "es" ? "es-ES" : "en-US";
-      recognition.start();
-
-      recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        sendMessage();
-      };
-    }
-
-    // Voice Output (Text-to-Speech)
-    function speakText(text, lang) {
-      if (!('speechSynthesis' in window)) return;
-      const utterance = new SpeechSynthesisUtterance(text);
-      if (lang === "hi") utterance.lang = "hi-IN";
-      else if (lang === "es") utterance.lang = "es-ES";
-      else utterance.lang = "en-US";
-      window.speechSynthesis.speak(utterance);
-    }
-
-    // Enter key send
-    userInput.addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
-  </script>
+  // Apply initial settings on load
+  (function init(){
+    applyTheme(settings.theme);
+  })();
+</script>
 </body>
 </html>
