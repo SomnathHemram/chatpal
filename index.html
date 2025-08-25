@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatPal - AI Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: var(--bg);
+      transition: background 0.3s, color 0.3s;
+    }
+    :root {
+      --bg: #f5f5f5;
+      --text: #000;
+      --bot: #e5e5ea;
+      --user: #4a90e2;
+      --header: #4a90e2;
+      --btn: #4a90e2;
+    }
+    body.dark {
+      --bg: #1e1e1e;
+      --text: #fff;
+      --bot: #444;
+      --user: #0078ff;
+      --header: #333;
+      --btn: #0078ff;
+    }
+    .chat-container {
+      width: 420px;
+      max-width: 95%;
+      height: 600px;
+      background: var(--bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      color: var(--text);
+    }
+    .chat-header {
+      background: var(--header);
+      color: white;
+      padding: 12px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-window {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+    .message {
+      max-width: 70%;
+      margin-bottom: 10px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      line-height: 1.4;
+      word-wrap: break-word;
+    }
+    .user-message {
+      align-self: flex-end;
+      background: var(--user);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .bot-message {
+      align-self: flex-start;
+      background: var(--bot);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+    .typing {
+      font-style: italic;
+      color: gray;
+      margin-bottom: 10px;
+    }
+    .chat-input-area {
+      display: flex;
+      border-top: 1px solid #ddd;
+      background: var(--bg);
+    }
+    .chat-input {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: var(--bg);
+      color: var(--text);
+    }
+    .send-btn {
+      background: var(--btn);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .send-btn:hover {
+      opacity: 0.9;
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+    }
+    select, button {
+      border: none;
+      padding: 5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-header">
+      🤖 ChatPal
+      <div class="controls">
+        <select id="languageSelect">
+          <option value="en">EN</option>
+          <option value="hi">HI</option>
+          <option value="es">ES</option>
+        </select>
+        <button onclick="toggleDarkMode()">🌙</button>
+        <button onclick="startVoiceInput()">🎤</button>
+      </div>
+    </div>
+    <div class="chat-window" id="chatWindow"></div>
+    <div class="chat-input-area">
+      <input type="text" id="userInput" class="chat-input" placeholder="Type a message..." />
+      <button class="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatWindow = document.getElementById('chatWindow');
+    const userInput = document.getElementById('userInput');
+    const languageSelect = document.getElementById('languageSelect');
+
+    // Load saved chat history
+    window.onload = () => {
+      let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+      history.forEach(msg => appendMessage(msg.text, msg.sender, false));
+    };
+
+    function appendMessage(message, sender, save = true) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
+      msgDiv.textContent = message;
+      chatWindow.appendChild(msgDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+
+      if (save) saveToHistory(message, sender);
+    }
+
+    function saveToHistory(text, sender) {
+      let history = JSON.parse(localStorage.getItem('chatHistory')) || [];
+      history.push({ text, sender });
+      localStorage.setItem('chatHistory', JSON.stringify(history));
+    }
+
+    function sendMessage() {
+      const message = userInput.value.trim();
+      if (message === "") return;
+
+      appendMessage(message, 'user');
+      userInput.value = "";
+
+      showTyping();
+      setTimeout(() => {
+        botReply(message);
+      }, 1000);
+    }
+
+    function showTyping() {
+      const typingDiv = document.createElement('div');
+      typingDiv.classList.add('typing');
+      typingDiv.id = "typing";
+      typingDiv.textContent = "ChatPal is typing...";
+      chatWindow.appendChild(typingDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    function removeTyping() {
+      const typingDiv = document.getElementById('typing');
+      if (typingDiv) typingDiv.remove();
+    }
+
+    function botReply(userMessage) {
+      removeTyping();
+
+      const lang = languageSelect.value;
+      let reply = "";
+
+      if (lang === "en") {
+        if (userMessage.toLowerCase().includes("hello")) reply = "Hello! 👋 How can I help?";
+        else if (userMessage.toLowerCase().includes("bye")) reply = "Goodbye! 👋";
+        else reply = "I’m ChatPal, your AI assistant!";
+      } 
+      else if (lang === "hi") {
+        if (userMessage.toLowerCase().includes("hello")) reply = "नमस्ते! 👋 कैसे हो?";
+        else if (userMessage.toLowerCase().includes("bye")) reply = "अलविदा! 👋";
+        else reply = "मैं ChatPal हूँ, आपका सहायक!";
+      } 
+      else if (lang === "es") {
+        if (userMessage.toLowerCase().includes("hello")) reply = "¡Hola! 👋 ¿Cómo puedo ayudarte?";
+        else if (userMessage.toLowerCase().includes("bye")) reply = "¡Adiós! 👋";
+        else reply = "Soy ChatPal, tu asistente virtual!";
+      }
+
+      appendMessage(reply, 'bot');
+      speakText(reply, lang);
+    }
+
+    // Dark Mode
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    // Voice Input (Speech-to-Text)
+    function startVoiceInput() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Your browser doesn't support Speech Recognition");
+        return;
+      }
+      const recognition = new webkitSpeechRecognition();
+      recognition.lang = languageSelect.value === "hi" ? "hi-IN" : 
+                         languageSelect.value === "es" ? "es-ES" : "en-US";
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        userInput.value = transcript;
+        sendMessage();
+      };
+    }
+
+    // Voice Output (Text-to-Speech)
+    function speakText(text, lang) {
+      if (!('speechSynthesis' in window)) return;
+      const utterance = new SpeechSynthesisUtterance(text);
+      if (lang === "hi") utterance.lang = "hi-IN";
+      else if (lang === "es") utterance.lang = "es-ES";
+      else utterance.lang = "en-US";
+      window.speechSynthesis.speak(utterance);
+    }
+
+    // Enter key send
+    userInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
